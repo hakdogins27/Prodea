@@ -146,7 +146,7 @@ export default function Homepage() {
               return (
               <div key={i} className="relative h-48 w-full group [perspective:1000px]">
                 <div 
-                  className={`w-full h-full transition-transform duration-700 ease-[transition-timing-function:cubic-bezier(0.23,1,0.32,1)] [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] group-hover:z-10`}
+                  className={`w-full h-full transition-transform duration-700 ease-fluid [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] group-hover:z-10`}
                 >
                   
                   {/* FRONT FACE */}

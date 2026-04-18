@@ -47,7 +47,7 @@ export function MarkdownDemoSequence() {
          <div className={`absolute z-20 flex flex-col items-center gap-1 transition-all pointer-events-none
             ${step < 2 ? 'opacity-0 scale-90 top-[35%] left-[20%] sm:top-32 sm:left-32' : ''}
             ${step === 2 ? 'opacity-100 scale-100 top-[35%] left-[20%] sm:top-32 sm:left-32 duration-300' : ''} 
-            ${step === 3 ? 'opacity-100 scale-[0.7] sm:scale-100 top-[25%] right-[25%] sm:top-24 sm:right-32 duration-1000 ease-[transition-timing-function:cubic-bezier(0.25,1,0.5,1)]' : ''}
+            ${step === 3 ? 'opacity-100 scale-[0.7] sm:scale-100 top-[25%] right-[25%] sm:top-24 sm:right-32 duration-1000 ease-expo' : ''}
             ${step >= 4 ? 'opacity-0 scale-50 top-[30%] right-[10%] sm:top-32 sm:right-12 duration-300' : ''}
          `}>
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white shadow-xl rounded flex items-center justify-center">
@@ -62,7 +62,7 @@ export function MarkdownDemoSequence() {
              ${step === 0 ? 'bottom-4 left-1/2 duration-0' : ''}
              ${step === 1 ? 'top-[35%] left-[25%] sm:top-32 sm:left-36 duration-1000 ease-out' : ''}
              ${step === 2 ? 'top-[35%] left-[25%] sm:top-32 sm:left-36 scale-75 duration-150' : ''}
-             ${step === 3 ? 'top-[25%] right-[25%] sm:top-24 sm:right-32 scale-100 duration-1000 ease-[transition-timing-function:cubic-bezier(0.25,1,0.5,1)]' : ''}
+             ${step === 3 ? 'top-[25%] right-[25%] sm:top-24 sm:right-32 scale-100 duration-1000 ease-expo' : ''}
              ${step >= 4 ? 'top-[30%] right-[5%] sm:top-32 sm:right-8 duration-700 ease-in' : ''}
            `} 
            fill="white"

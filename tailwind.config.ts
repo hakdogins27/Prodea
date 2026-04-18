@@ -86,6 +86,11 @@ const config = {
         flip: "flip 1s ease-out forwards",
         highlight: "highlight 3s infinite linear"
       },
+      transitionTimingFunction: {
+        studio: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        fluid: "cubic-bezier(0.23, 1, 0.32, 1)",
+        expo: "cubic-bezier(0.25, 1, 0.5, 1)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
