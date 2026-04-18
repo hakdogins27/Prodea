@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     };
 
     const systemPrompt = phase === 'extraction' ? EXTRACTION_SYSTEM_PROMPT : REFINEMENT_SYSTEM_PROMPT;
+    const modelId = phase === 'extraction' ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
 
     // For refinement, we MUST provide the AI with the current state it is working on
     const userMessage = phase === 'refinement' 
@@ -81,10 +82,10 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: modelId,
         messages: chatMessages,
-        temperature: 0.2,
-        max_tokens: 8192,
+        temperature: 0.1,
+        max_tokens: phase === 'extraction' ? 4096 : 2048,
         response_format: { type: 'json_object' }
       })
     });
