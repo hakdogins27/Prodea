@@ -147,8 +147,31 @@ export async function POST(req: Request) {
     try {
       const parsed = JSON.parse(raw);
       
+      // Sanitize: convert any nested objects/arrays in state fields to readable strings
+      // The 8B model sometimes returns JSON objects for fields that should be plain text
+      const flattenToString = (val: any): string => {
+        if (typeof val === 'string') return val;
+        if (Array.isArray(val)) return val.map((item: any) => typeof item === 'object' ? `- ${Object.values(item).join(': ')}` : `- ${item}`).join('\n');
+        if (typeof val === 'object' && val !== null) return Object.entries(val).map(([k, v]) => `- ${k}: ${typeof v === 'object' ? flattenToString(v) : v}`).join('\n');
+        return String(val ?? '');
+      };
+
+      const sanitizedState = parsed.updated_state || {};
+      for (const key of Object.keys(sanitizedState)) {
+        if (key === 'overview' && typeof sanitizedState[key] === 'object') {
+          // overview is allowed to be an object, but sanitize its children
+          for (const subKey of Object.keys(sanitizedState[key])) {
+            if (typeof sanitizedState[key][subKey] !== 'string') {
+              sanitizedState[key][subKey] = flattenToString(sanitizedState[key][subKey]);
+            }
+          }
+        } else if (typeof sanitizedState[key] !== 'string') {
+          sanitizedState[key] = flattenToString(sanitizedState[key]);
+        }
+      }
+
       // Deep merge — never wipe existing state, only update new fields
-      const mergedState = deepMerge(currentState, parsed.updated_state || {});
+      const mergedState = deepMerge(currentState, sanitizedState);
       
       // Final check for completion
       const finalMissing = getMissingSections(mergedState);
