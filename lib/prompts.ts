@@ -45,7 +45,8 @@ OUTPUT RULES (STRICT SYNC WITH SAMPLE):
 4. NO JSON ARRAYS: Always return a single string for each field.
 5. COMPLETE SCALE: Infill all strategic gaps with enterprise standards.
 6. NO EMPTY FIELDS: EVERY SINGLE ONE of the 20 keys above MUST be populated with high-quality, professional technical content. If the user dump is brief, you MUST proactively architect the missing pieces (e.g., specific security protocols, database schemas, performance strategies) using your expertise.
-7. JSON MODE: You MUST respond in valid JSON format. Respond in JSON.
+7. HIGH-YIELD OUTPUT: Be extremely dense and precise. Avoid conversational filler. Every token MUST provide technical value to the blueprint to ensure all 20 sections fit within the 4500-token limit.
+8. JSON MODE: You MUST respond in valid JSON format. Respond in JSON.
 
 OUTPUT:
 {

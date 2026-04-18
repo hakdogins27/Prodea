@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         model: modelId,
         messages: chatMessages,
         temperature: 0.1,
-        max_tokens: phase === 'extraction' ? 6000 : 2048,
+        max_tokens: phase === 'extraction' ? 4500 : 2048,
         response_format: { type: 'json_object' }
       })
     });
