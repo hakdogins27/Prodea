@@ -5,6 +5,8 @@ import { EXTRACTION_SYSTEM_PROMPT, REFINEMENT_SYSTEM_PROMPT } from '@/lib/prompt
 import { ChatRequestSchema } from '@/lib/validations';
 import { rateLimit } from '@/lib/rate-limit';
 
+export const runtime = 'edge';
+
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export async function POST(req: Request) {
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
     };
 
     const systemPrompt = phase === 'extraction' ? EXTRACTION_SYSTEM_PROMPT : REFINEMENT_SYSTEM_PROMPT;
-    const modelId = phase === 'extraction' ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
+    const modelId = 'llama-3.1-8b-instant';
 
     // For refinement, we MUST provide the AI with the current state it is working on
     const userMessage = phase === 'refinement' 
