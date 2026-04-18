@@ -55,7 +55,6 @@ interface ProjectStore {
   isChatCompleted: boolean;
   interviewStep: number;
   lastUpdatedField: string | null;
-  pendingProposal: { state: Partial<IdeaState>, ai_response: string } | null;
   addMessage: (message: Message) => void;
   updateIdeaState: (state: Partial<IdeaState> | ((prev: IdeaState) => IdeaState)) => void;
   setWorkflowStep: (step: 1 | 2 | 3) => void;
@@ -63,9 +62,6 @@ interface ProjectStore {
   setIsChatCompleted: (completed: boolean) => void;
   setInterviewStep: (step: number) => void;
   setLastUpdatedField: (field: string | null) => void;
-  setPendingProposal: (proposal: { state: Partial<IdeaState>, ai_response: string } | null) => void;
-  approveProposal: () => void;
-  rejectProposal: () => void;
   clearSession: () => void;
 }
 
@@ -79,7 +75,6 @@ export const useProjectStore = create<ProjectStore>()(
       isChatCompleted: false,
       interviewStep: 0,
       lastUpdatedField: null,
-      pendingProposal: null,
       addMessage: (message) => 
         set((state) => ({ messages: [...state.messages, message] })),
       updateIdeaState: (update) => 
@@ -94,18 +89,8 @@ export const useProjectStore = create<ProjectStore>()(
       setIsChatCompleted: (completed) => set({ isChatCompleted: completed }),
       setInterviewStep: (step) => set({ interviewStep: step }),
       setLastUpdatedField: (field) => set({ lastUpdatedField: field }),
-      setPendingProposal: (proposal) => set({ pendingProposal: proposal }),
-      approveProposal: () => set((state) => {
-        if (!state.pendingProposal) return {};
-        return {
-          ideaState: deepMerge(state.ideaState, state.pendingProposal.state),
-          pendingProposal: null,
-          lastUpdatedField: Object.keys(state.pendingProposal.state)[0] || null
-        };
-      }),
-      rejectProposal: () => set({ pendingProposal: null }),
       clearSession: () => 
-        set({ messages: [], ideaState: INITIAL_IDEA_STATE, workflowStep: 1, isProcessing: false, isChatCompleted: false, interviewStep: 0, lastUpdatedField: null, pendingProposal: null }),
+        set({ messages: [], ideaState: INITIAL_IDEA_STATE, workflowStep: 1, isProcessing: false, isChatCompleted: false, interviewStep: 0, lastUpdatedField: null }),
     }),
     {
       name: 'prodea-session-v7',

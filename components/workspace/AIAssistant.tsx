@@ -2,7 +2,7 @@
 
 import { Check, Cpu, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { cn, humanizeValue } from "@/lib/utils";
-import { IdeaState, Message, useProjectStore } from "@/store/useProjectStore";
+import { IdeaState, Message } from "@/store/useProjectStore";
 
 interface AIAssistantProps {
   ideaState: IdeaState;
@@ -29,7 +29,6 @@ export function AIAssistant({
   handleRefinement,
   handleFinalize,
 }: AIAssistantProps) {
-  const { pendingProposal, approveProposal, rejectProposal } = useProjectStore();
   const isReady = isChatCompleted || (initialMissingCount > 0 && currentMissingCount === 0);
 
   return (
@@ -75,37 +74,6 @@ export function AIAssistant({
             ))}
           </div>
         </div>
-
-        {/* Pending Proposal Card */}
-        {pendingProposal && (
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 mx-2 animate-in slide-in-from-top-4 duration-500">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 shrink-0">
-                <Sparkles className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h5 className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Architectural Proposal</h5>
-                <p className="text-[11px] text-white/60 leading-relaxed mb-3">
-                  {pendingProposal.ai_response}
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                   <button 
-                    onClick={() => approveProposal()}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all"
-                   >
-                     Approve <Check className="w-3 h-3" />
-                   </button>
-                   <button 
-                    onClick={() => rejectProposal()}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 border border-white/10 text-white/40 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
-                   >
-                     Discard
-                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
           <p className="text-xs leading-relaxed text-white/30 font-medium text-center px-4 ">
