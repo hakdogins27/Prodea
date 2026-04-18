@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Cpu, Loader2, Sparkles, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, humanizeValue } from "@/lib/utils";
 import { IdeaState, Message } from "@/store/useProjectStore";
 
 interface AIAssistantProps {
@@ -77,7 +77,7 @@ export function AIAssistant({
 
         <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
           <p className="text-xs leading-relaxed text-white/30 font-medium text-center px-4 ">
-            {messages.length > 0 ? messages[messages.length - 1].content : "Drafting your complete blueprint..."}
+            {messages.length > 0 ? humanizeValue(messages[messages.length - 1].content) : "Drafting your complete blueprint..."}
           </p>
           
           <form 

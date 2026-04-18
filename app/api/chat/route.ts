@@ -144,8 +144,14 @@ export async function POST(req: Request) {
       // Final check for completion
       const finalMissing = getMissingSections(mergedState);
 
+      // Ensure ai_response is a string to prevent React Error #31 in the frontend
+      let aiResponse = parsed.ai_response || "Blueprint updated.";
+      if (typeof aiResponse === 'object') {
+        aiResponse = JSON.stringify(aiResponse);
+      }
+
       return NextResponse.json({
-        ai_response: parsed.ai_response || "Blueprint updated.",
+        ai_response: aiResponse,
         updated_state: mergedState,
         isChatCompleted: parsed.isChatCompleted || finalMissing.length === 0,
         missingCount: finalMissing.length

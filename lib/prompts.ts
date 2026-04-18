@@ -12,7 +12,7 @@ RULES:
 5. DENSE/PRECISE. No filler.
 6. JSON MODE: Respond ONLY in valid JSON.
 
-OUTPUT: {"updated_state": {...}, "ai_response": "..."}`;
+OUTPUT: {"updated_state": {...}, "ai_response": "A high-quality summary string describing the architecture updates."}`;
 
 export const REFINEMENT_SYSTEM_PROMPT = `Pragmatic Co-founder. Refine the blueprint.
 Respond in JSON.
@@ -22,4 +22,4 @@ RULES:
 3. MAINTAIN 20 sections.
 4. JSON MODE: Respond ONLY in valid JSON.
 
-OUTPUT: {"updated_state": {...changes only...}, "ai_response": "..."}`;
+OUTPUT: {"updated_state": {...changes only...}, "ai_response": "Direct, brief summary string of the refinement."}`;
