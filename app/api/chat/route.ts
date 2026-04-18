@@ -157,18 +157,25 @@ export async function POST(req: Request) {
       };
 
       const sanitizedState = parsed.updated_state || {};
-      for (const key of Object.keys(sanitizedState)) {
-        if (key === 'overview' && typeof sanitizedState[key] === 'object') {
-          // overview is allowed to be an object, but sanitize its children
-          for (const subKey of Object.keys(sanitizedState[key])) {
-            if (typeof sanitizedState[key][subKey] !== 'string') {
-              sanitizedState[key][subKey] = flattenToString(sanitizedState[key][subKey]);
+      const proposedState = parsed.proposed_state || {};
+
+      const sanitizeObj = (obj: any) => {
+        for (const key of Object.keys(obj)) {
+          if (key === 'overview' && typeof obj[key] === 'object') {
+            for (const subKey of Object.keys(obj[key])) {
+              if (typeof obj[key][subKey] !== 'string') {
+                obj[key][subKey] = flattenToString(obj[key][subKey]);
+              }
             }
+          } else if (typeof obj[key] !== 'string') {
+            obj[key] = flattenToString(obj[key]);
           }
-        } else if (typeof sanitizedState[key] !== 'string') {
-          sanitizedState[key] = flattenToString(sanitizedState[key]);
         }
-      }
+        return obj;
+      };
+
+      sanitizeObj(sanitizedState);
+      sanitizeObj(proposedState);
 
       // Deep merge — never wipe existing state, only update new fields
       const mergedState = deepMerge(currentState, sanitizedState);
@@ -185,6 +192,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         ai_response: aiResponse,
         updated_state: mergedState,
+        proposed_state: Object.keys(proposedState).length > 0 ? proposedState : null,
         isChatCompleted: parsed.isChatCompleted || finalMissing.length === 0,
         missingCount: finalMissing.length
       });

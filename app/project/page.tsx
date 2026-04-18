@@ -229,6 +229,12 @@ function ProjectWorkspace() {
           const keys = Object.keys(data.updated_state);
           if (keys.length > 0) setLastUpdatedField(keys[0]);
         }
+        if (data.proposed_state) {
+          useProjectStore.getState().setPendingProposal({
+            state: data.proposed_state,
+            ai_response: data.ai_response
+          });
+        }
       } else {
         alert(`${data.error || 'Refinement Failed'}: ${data.details || 'Check console for details.'}`);
       }
