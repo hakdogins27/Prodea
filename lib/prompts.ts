@@ -44,6 +44,8 @@ OUTPUT RULES (STRICT SYNC WITH SAMPLE):
 3. BULLET SECTIONS (MANDATORY): For ALL OTHER technical sections (Architecture, Frontend, Backend, Database, Security, etc.), you MUST use clean, double-newline separated bullet points (- Item \\n\\n). NEVER use tables in these sections.
 4. NO JSON ARRAYS: Always return a single string for each field.
 5. COMPLETE SCALE: Infill all strategic gaps with enterprise standards.
+6. NO EMPTY FIELDS: EVERY SINGLE ONE of the 20 keys above MUST be populated with high-quality, professional technical content. If the user dump is brief, you MUST proactively architect the missing pieces (e.g., specific security protocols, database schemas, performance strategies) using your expertise.
+7. JSON MODE: You MUST respond in valid JSON format. Respond in JSON.
 
 OUTPUT:
 {
