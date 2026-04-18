@@ -19,10 +19,10 @@ export const humanizeValue = (val: any): string => {
     // 2. Flatten markdown tables if found in Step 2 preview
     if (processed.includes('|') && processed.includes('---')) {
       processed = processed.split('\n')
-        .filter(line => !line.includes('---')) // remove separator
-        .map(line => {
+        .filter((line: string) => !line.includes('---')) // remove separator
+        .map((line: string) => {
           if (line.trim().startsWith('|')) {
-            const cells = line.split('|').map(c => c.trim()).filter(c => c !== "");
+            const cells = line.split('|').map((c: string) => c.trim()).filter((c: string) => c !== "");
             return `- ${cells.join(': ')}`;
           }
           return line;
@@ -33,13 +33,13 @@ export const humanizeValue = (val: any): string => {
   }
   
   if (Array.isArray(val)) {
-    return val.map(item => typeof item === 'object' ? humanizeValue(item) : `- ${item}`).join('\n');
+    return val.map((item: any) => typeof item === 'object' ? humanizeValue(item) : `- ${item}`).join('\n');
   }
   
   if (typeof val === 'object') {
     return Object.values(val)
-      .map(v => humanizeValue(v))
-      .filter(v => v.trim() !== "")
+      .map((v: any) => humanizeValue(v))
+      .filter((v: string) => v.trim() !== "")
       .join('\n\n');
   }
   
