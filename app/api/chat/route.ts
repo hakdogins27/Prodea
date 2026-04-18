@@ -106,23 +106,20 @@ export async function POST(req: Request) {
         model: modelId,
         messages: chatMessages,
         temperature: 0.1,
-        max_tokens: phase === 'extraction' ? 4500 : 2048,
+        max_tokens: phase === 'extraction' ? 8000 : 2048,
         response_format: { type: 'json_object' }
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Groq API Error:', errorData);
+      console.error('Groq API Error:', response.status, errorData);
       
-      // If the error is a rate limit (429), provide a clearer message
-      const isRateLimit = response.status === 429;
-      const details = errorData.error?.message || response.statusText;
+      const details = errorData.error?.message || response.statusText || 'Unknown upstream error';
 
       return NextResponse.json({ 
-        error: isRateLimit ? 'AI Rate Limit Reached' : 'AI Provider Error', 
-        details: isRateLimit ? 'Too many requests. Please wait a few seconds and try again.' : details,
-        raw_error: errorData,
+        error: `Groq ${response.status}`, 
+        details: details,
         status: response.status 
       }, { status: 424 }); 
     }
