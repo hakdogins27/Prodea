@@ -50,6 +50,9 @@ export async function POST(req: Request) {
     
     // For AI context, strip empty fields to stay under TPM limits (especially 8B)
     const optimizedContextState = stripEmptyValues(currentState);
+    
+    // Further optimization: AI instructions are already in the system prompt, don't waste tokens in the state
+    if (optimizedContextState.aiInstructions) delete optimizedContextState.aiInstructions;
 
     const systemPrompt = phase === 'extraction' ? EXTRACTION_SYSTEM_PROMPT : REFINEMENT_SYSTEM_PROMPT;
     
@@ -89,7 +92,7 @@ export async function POST(req: Request) {
       ...history.map((m: any) => ({
         role: m.role,
         content: m.content
-      })).slice(-10),
+      })).slice(-4),
       { role: 'user', content: userMessage }
     ];
 
