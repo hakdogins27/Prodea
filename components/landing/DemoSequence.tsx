@@ -52,7 +52,7 @@ export function DemoSequence() {
              </button>
              {/* Animated Cursor */}
              <MousePointer2 
-               className={`absolute w-8 h-8 text-black drop-shadow-2xl z-50 transition-all duration-[700ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+               className={`absolute w-8 h-8 text-black drop-shadow-2xl z-50 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                  step === 0 ? 'top-32 right-32 opacity-0' :
                  step === 1 ? 'bottom-4 right-4 opacity-100 scale-100' :
                  step === 2 ? 'bottom-4 right-4 opacity-100 scale-75' :
