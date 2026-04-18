@@ -96,20 +96,32 @@ export async function POST(req: Request) {
       { role: 'user', content: userMessage }
     ];
 
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: modelId,
-        messages: chatMessages,
-        temperature: 0.1,
-        max_tokens: phase === 'extraction' ? 8000 : 2048,
-        response_format: { type: 'json_object' }
-      })
-    });
+    // Helper: call Groq with automatic fallback on 429
+    const FALLBACK_MODEL = 'llama-3.1-8b-instant';
+    const callGroq = async (model: string, maxTokens: number): Promise<Response> => {
+      return fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages: chatMessages,
+          temperature: 0.1,
+          max_tokens: maxTokens,
+          response_format: { type: 'json_object' }
+        })
+      });
+    };
+
+    // Try primary model, fallback to 8B on rate limit (429)
+    let response = await callGroq(modelId, phase === 'extraction' ? 8000 : 2048);
+
+    if (!response.ok && response.status === 429 && modelId !== FALLBACK_MODEL) {
+      console.warn(`Primary model ${modelId} hit 429, falling back to ${FALLBACK_MODEL}`);
+      response = await callGroq(FALLBACK_MODEL, phase === 'extraction' ? 4000 : 2048);
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
