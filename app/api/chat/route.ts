@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         model: modelId,
         messages: chatMessages,
         temperature: 0.1,
-        max_tokens: phase === 'extraction' ? 8192 : 2048,
+        max_tokens: phase === 'extraction' ? 6000 : 2048,
         response_format: { type: 'json_object' }
       })
     });
@@ -95,11 +95,17 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('Groq API Error:', errorData);
+      
+      // If the error is a rate limit (429), provide a clearer message
+      const isRateLimit = response.status === 429;
+      const details = errorData.error?.message || response.statusText;
+
       return NextResponse.json({ 
-        error: 'AI Provider Error', 
-        details: errorData.error?.message || response.statusText,
+        error: isRateLimit ? 'AI Rate Limit Reached' : 'AI Provider Error', 
+        details: isRateLimit ? 'Too many requests. Please wait a few seconds and try again.' : details,
+        raw_error: errorData,
         status: response.status 
-      }, { status: 424 }); // 424 Failed Dependency / Upstream Error
+      }, { status: 424 }); 
     }
 
     const data = await response.json();

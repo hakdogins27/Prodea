@@ -95,6 +95,8 @@ function ProjectWorkspace() {
             timestamp: new Date().toISOString()
           });
         }
+      } else {
+        alert(`${data.error || 'Ignition Failed'}: ${data.details || 'Check console for details.'}`);
       }
     } finally {
       setIsProcessing(false);
@@ -227,6 +229,8 @@ function ProjectWorkspace() {
           const keys = Object.keys(data.updated_state);
           if (keys.length > 0) setLastUpdatedField(keys[0]);
         }
+      } else {
+        alert(`${data.error || 'Refinement Failed'}: ${data.details || 'Check console for details.'}`);
       }
     } catch (e) {
       console.error(e);
