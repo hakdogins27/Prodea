@@ -63,6 +63,7 @@ STRICT FORMATTING RULES:
    - Known Risks (| Risk | Likelihood | Impact |)
 2. BULLETS: For all other updates (Backlog, Security, Design), use clean bullet points. FORCE: DO NOT use markdown tables for sections that are not listed above.
 3. CONTEXT: Maintain all 20 sections of the blueprint at all times.
+4. JSON MODE: You MUST respond in valid JSON format. Respond in JSON.
 
 OUTPUT FORMAT:
 {

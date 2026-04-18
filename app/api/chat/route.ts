@@ -93,16 +93,20 @@ export async function POST(req: Request) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Groq API Error:', errorText);
-      return NextResponse.json({ error: 'AI model request failed' }, { status: 502 });
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Groq API Error:', errorData);
+      return NextResponse.json({ 
+        error: 'AI Provider Error', 
+        details: errorData.error?.message || response.statusText,
+        status: response.status 
+      }, { status: 424 }); // 424 Failed Dependency / Upstream Error
     }
 
     const data = await response.json();
     let raw = data.choices[0]?.message?.content;
 
     if (!raw) {
-      return NextResponse.json({ error: 'Empty response from model' }, { status: 502 });
+      return NextResponse.json({ error: 'AI returned an empty response' }, { status: 424 });
     }
 
     // 3. Sanitization & Validation of Model Output
@@ -123,7 +127,11 @@ export async function POST(req: Request) {
       });
     } catch (e) {
       console.error('Output Parsing Error:', e, raw);
-      return NextResponse.json({ error: 'Model output was invalid JSON' }, { status: 502 });
+      return NextResponse.json({ 
+        error: 'AI mapping failure', 
+        details: 'The model failed to produce a valid JSON blueprint. Try refining your request.',
+        raw: process.env.NODE_ENV === 'development' ? raw : undefined
+      }, { status: 422 }); // 422 Unprocessable Entity
     }
 
   } catch (error) {
