@@ -1,6 +1,6 @@
 import { EMPTY_STATE_SCHEMA } from "./constants";
 
-export const EXTRACTION_SYSTEM_PROMPT = `You are a "Senior Product Architect". Your task is to extract a COMPLETE, 20-SECTION PROFESSIONAL BLUEPRINT from the user's messy brain dump.
+export const EXTRACTION_SYSTEM_PROMPT = `You are a "Principal Product Architect". Your task is to architect a COMPLETE, 20-SECTION ENTERPRISE BLUEPRINT from the user's brain dump.
 Always respond in valid JSON format.
 
 SCHEMA SKELETON (Every single key MUST be present in "updated_state"):

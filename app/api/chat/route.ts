@@ -30,22 +30,41 @@ export async function POST(req: Request) {
     }
 
     const { message, state, phase, history } = validated.data;
-
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'Missing GROQ_API_KEY' }, { status: 500 });
     }
 
-    // Merge incoming state with the full schema so the AI always sees all fields
+    // Helper to strip empty/null values to save tokens in Refinement
+    const stripEmptyValues = (obj: any): any => {
+      if (!obj || typeof obj !== 'object') return obj;
+      return Object.fromEntries(
+        Object.entries(obj)
+          .map(([k, v]) => [k, v && typeof v === 'object' && !Array.isArray(v) ? stripEmptyValues(v) : v])
+          .filter(([_, v]) => v !== null && v !== undefined && v !== '')
+      );
+    };
+
+    // Merge incoming state with the full schema so the backend always has a full record
     const currentState = deepMerge(EMPTY_STATE_SCHEMA, state || {});
+    
+    // For AI context, strip empty fields to stay under TPM limits (especially 8B)
+    const optimizedContextState = stripEmptyValues(currentState);
+
+    const systemPrompt = phase === 'extraction' ? EXTRACTION_SYSTEM_PROMPT : REFINEMENT_SYSTEM_PROMPT;
+    
+    // HYBRID STRATEGY: 70B for big architecture, 8B for fast refinement chatter
+    const modelId = phase === 'extraction' ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
 
     // Utility to find missing sections
     const getMissingSections = (s: any) => {
       const missing = [];
       if (!s.aiInstructions) missing.push('aiInstructions');
-      Object.entries(s.overview || {}).forEach(([k, v]) => {
-        if (!v) missing.push(`overview.${k}`);
-      });
+      if (s.overview) {
+        Object.entries(s.overview).forEach(([k, v]) => {
+          if (!v) missing.push(`overview.${k}`);
+        });
+      }
       const otherSectionsAvailable = [
         'featureBacklog', 'techStack', 'constraints',
         'currentState', 'systemArchitecture', 'frontendStructure', 'backendStructure', 
@@ -59,12 +78,9 @@ export async function POST(req: Request) {
       return missing;
     };
 
-    const systemPrompt = phase === 'extraction' ? EXTRACTION_SYSTEM_PROMPT : REFINEMENT_SYSTEM_PROMPT;
-    const modelId = 'llama-3.1-8b-instant';
-
     // For refinement, we MUST provide the AI with the current state it is working on
     const userMessage = phase === 'refinement' 
-      ? `CURRENT PROJECT STATE:\n${JSON.stringify(currentState, null, 2)}\n\nUSER REQUEST: ${message}`
+      ? `CURRENT PROJECT STATE (Optimized):\n${JSON.stringify(optimizedContextState, null, 2)}\n\nUSER REQUEST: ${message}`
       : message;
 
     // Prepare message sequence with history
