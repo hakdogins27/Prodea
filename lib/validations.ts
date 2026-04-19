@@ -1,35 +1,47 @@
 import { z } from "zod";
 
+const flexibleString = z.union([z.string(), z.any()]).transform(val => {
+  if (typeof val === 'string') return val;
+  if (val === null || val === undefined) return '';
+  try {
+    if (Array.isArray(val)) return val.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).join('\n');
+    if (typeof val === 'object') return Object.entries(val).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join('\n');
+    return String(val);
+  } catch (e) {
+    return String(val);
+  }
+});
+
 export const ProjectOverviewSchema = z.object({
-  name: z.string().max(100).optional().default(''),
-  description: z.string().max(2000).optional().default(''),
-  problem: z.string().max(1000).optional().default(''),
-  targetUsers: z.string().max(500).optional().default(''),
-  coreGoal: z.string().max(500).optional().default(''),
-  outOfScope: z.string().max(2000).optional().default(''),
+  name: flexibleString.optional().default(''),
+  description: flexibleString.optional().default(''),
+  problem: flexibleString.optional().default(''),
+  targetUsers: flexibleString.optional().default(''),
+  coreGoal: flexibleString.optional().default(''),
+  outOfScope: flexibleString.optional().default(''),
 });
 
 export const IdeaStateSchema = z.object({
-  aiInstructions: z.string().max(2000).optional().default(''),
+  aiInstructions: flexibleString.optional().default(''),
   overview: ProjectOverviewSchema,
-  featureBacklog: z.string().max(5000).optional().default(''),
-  techStack: z.string().max(2000).optional().default(''),
-  constraints: z.string().max(2000).optional().default(''),
-  currentState: z.string().max(2000).optional().default(''),
-  systemArchitecture: z.string().max(5000).optional().default(''),
-  frontendStructure: z.string().max(3000).optional().default(''),
-  backendStructure: z.string().max(3000).optional().default(''),
-  databaseDesign: z.string().max(5000).optional().default(''),
-  apiContract: z.string().max(5000).optional().default(''),
-  securityLayer: z.string().max(3000).optional().default(''),
-  performanceStrategy: z.string().max(2000).optional().default(''),
-  workflowUsageMap: z.string().max(3000).optional().default(''),
-  knownRisks: z.string().max(2000).optional().default(''),
-  devRules: z.string().max(2000).optional().default(''),
-  envVariables: z.string().max(2000).optional().default(''),
-  changeLog: z.string().max(3000).optional().default(''),
-  futureIdeas: z.string().max(3000).optional().default(''),
-  finalPrinciple: z.string().max(1000).optional().default(''),
+  featureBacklog: flexibleString.optional().default(''),
+  techStack: flexibleString.optional().default(''),
+  constraints: flexibleString.optional().default(''),
+  currentState: flexibleString.optional().default(''),
+  systemArchitecture: flexibleString.optional().default(''),
+  frontendStructure: flexibleString.optional().default(''),
+  backendStructure: flexibleString.optional().default(''),
+  databaseDesign: flexibleString.optional().default(''),
+  apiContract: flexibleString.optional().default(''),
+  securityLayer: flexibleString.optional().default(''),
+  performanceStrategy: flexibleString.optional().default(''),
+  workflowUsageMap: flexibleString.optional().default(''),
+  knownRisks: flexibleString.optional().default(''),
+  devRules: flexibleString.optional().default(''),
+  envVariables: flexibleString.optional().default(''),
+  changeLog: flexibleString.optional().default(''),
+  futureIdeas: flexibleString.optional().default(''),
+  finalPrinciple: flexibleString.optional().default(''),
 });
 
 export const ChatRequestSchema = z.object({

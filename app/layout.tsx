@@ -8,7 +8,9 @@ export const metadata: Metadata = {
   title: 'Prodea | Structure Your Ideas',
   description: 'AI-guided system that helps users refine raw ideas into structured, build-ready project blueprints.',
   icons: {
-    icon: '/logo.jpg',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 }
 

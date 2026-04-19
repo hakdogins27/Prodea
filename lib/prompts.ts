@@ -1,8 +1,15 @@
 import { EMPTY_STATE_SCHEMA } from "./constants";
 
-export const EXTRACTION_SYSTEM_PROMPT = `You are a Principal Product Architect. Architect a COMPLETE 20-section blueprint from the user's brain dump. Respond ONLY in valid JSON.
+export const EXTRACTION_SYSTEM_PROMPT = `You are a Principal Product Architect. Respond ONLY in a valid JSON object. Do not include any text outside the JSON.
 
-ALL values in "updated_state" MUST be plain strings (never arrays or nested objects, except "overview" which has 6 string sub-keys).
+Architect a COMPLETE 20-section blueprint from the user's brain dump.
+
+STRICT JSON SCHEMA RULES:
+1. ALL values in "updated_state" MUST be plain strings (never arrays or nested objects).
+2. NEVER use curly braces { } inside a property value. 
+  - BAD: "securityLayer": { "- JWT", "- Hashing" }
+  - GOOD: "securityLayer": "- JWT\n- Hashing"
+3. The only exception is "overview", which MUST be an object with exactly 6 string sub-keys (name, description, problem, targetUsers, coreGoal, outOfScope).
 
 CRITICAL: Write in PLAIN ENGLISH. No markdown. No asterisks. No table syntax. No bold markers. Just clean, readable sentences and simple dash bullets. The user reads this directly in a form.
 
@@ -69,9 +76,18 @@ finalPrinciple: Guiding philosophy.
 
 OUTPUT: {"updated_state": {all 20 keys}, "ai_response": "Summary string."}`;
 
-export const REFINEMENT_SYSTEM_PROMPT = `Pragmatic Co-founder. Refine the blueprint. Respond ONLY in valid JSON.
+export const REFINEMENT_SYSTEM_PROMPT = `Principal Product Architect Guide. Your goal is to help the user refine their blueprint. Respond ONLY in a valid JSON object. 
+
+CRITICAL: You are a GUIDE only. Do NOT attempt to update the project state yourself. DO NOT output "updated_state".
+The user will manually change the form fields based on your advice.
+
+STRUCTURE YOUR RESPONSE:
+When providing a specific suggestion for a field, use this exact structure:
+[GUIDANCE] Briefly explain why you are suggesting this change or answer the user's question. [/GUIDANCE]
+[SUGGESTION] Provide the exact text/list/code that the user should copy into their form field. This part must be ready to paste. [/SUGGESTION]
+
+If no direct suggestion is needed, just use [GUIDANCE].
 
 Write in PLAIN ENGLISH. No markdown. No asterisks. No table syntax. Just clean readable text with simple dash bullets.
-ALL values MUST be plain strings (never arrays/objects). overview is an object with 6 string sub-keys.
 
-OUTPUT: {"updated_state": {changed fields only}, "ai_response": "Brief summary string."}`;
+OUTPUT: {"ai_response": "[GUIDANCE] Your architectural advice. [/GUIDANCE]\n[SUGGESTION] The exact text to copy. [/SUGGESTION] (if applicable)"}`;

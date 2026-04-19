@@ -59,7 +59,7 @@ export function MarkdownDemoSequence() {
          {/* Animating Mouse Cursor */}
          <MousePointer2 
            className={`absolute w-6 h-6 sm:w-8 sm:h-8 text-black drop-shadow-2xl z-50 transition-all pointer-events-none 
-             ${step === 0 ? 'bottom-4 left-1/2 duration-0' : ''}
+             ${step === 0 ? 'bottom-4 left-[50%] duration-0' : ''}
              ${step === 1 ? 'top-[35%] left-[25%] sm:top-32 sm:left-36 duration-1000 ease-out' : ''}
              ${step === 2 ? 'top-[35%] left-[25%] sm:top-32 sm:left-36 scale-75 duration-150' : ''}
              ${step === 3 ? 'top-[25%] right-[25%] sm:top-24 sm:right-32 scale-100 duration-1000 ease-expo' : ''}
@@ -69,5 +69,5 @@ export function MarkdownDemoSequence() {
          />
       </div>
     </div>
-  )
+  );
 }

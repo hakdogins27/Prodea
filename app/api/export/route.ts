@@ -34,40 +34,98 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Missing Groq API Key for Assisted Export." }, { status: 500 });
       }
 
-      const systemPrompt = `You are a "Senior Product Architect". Generate a high-clarity, professional 20-SECTION PROJECT.md blueprint.
+      // Helper to strip empty values and truncate long fields to save critical tokens (TPM limits)
+      const stripEmptyValues = (obj: any): any => {
+        if (!obj || typeof obj !== 'object') {
+          // Truncate long strings to 1000 chars to avoid TPM kill
+          if (typeof obj === 'string' && obj.length > 1000) {
+            return obj.substring(0, 1000) + '... (truncated for architectural analysis)';
+          }
+          return obj;
+        }
+        return Object.fromEntries(
+          Object.entries(obj)
+            .map(([k, v]) => [k, v && typeof v === 'object' && !Array.isArray(v) ? stripEmptyValues(v) : (typeof v === 'string' && v.length > 1000 ? v.substring(0, 1000) + '...' : v)])
+            .filter(([_, v]) => v !== null && v !== undefined && v !== '')
+        );
+      };
 
-MISSION:
-1. Infer professional, connected content for all 20 sections based on JSON state.
-2. Structure high-density technical layers using MARKDOWN TABLES.
-3. Keep the layout flat, professional, and optimized for AI-native coding.
+      // Prune state to stay under 6k TPM limits for 8B model fallback
+      const prunedState = stripEmptyValues(state);
+      if (prunedState.aiInstructions) delete prunedState.aiInstructions;
+      if (prunedState.changeLog) delete prunedState.changeLog; // Usually not needed for architect summary
 
-STRICT FORMATTING RULES:
-- Use ## [N]. [Section Name] for all 20 architectural sections.
-- Use MARKDOWN TABLES for: Tech Stack (Layer|Tech|Version|Notes), Architecture Decisions (Decision|Choice|Reason), API Contract (Method|Endpoint|Desc|Auth), and Known Risks (Risk|Likelihood|Impact|Mitigation).
-- Section 0 (AI Instructions): Provide 5-8 precise guardrails at the top.
-- Section 16 (Env Vars): Provide a code block sample .env.example.
-- NO introductory/concluding fluff. Start immediately with the title.
+      const systemPrompt = `You are a "Senior Product Architect". Respond ONLY with a valid JSON object.
 
-Current State:
-${JSON.stringify(state, null, 2)}`;
+Based on the project state below, generate a personalized, high-clarity 3-4 sentence EXECUTIVE SUMMARY for the project's living documentation. 
 
-      const response = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "system", content: systemPrompt }],
-          temperature: 0.2
-        })
-      });
+Focus on:
+1. The project's unique value proposition.
+2. The core technical strategy (stack and architecture).
+3. The immediate roadmap focus.
+
+### OUTPUT FORMAT:
+You MUST respond in a valid JSON format with exactly one key:
+- "summary": The personalized executive summary.
+
+Current State to Architect:
+${JSON.stringify(prunedState, null, 2)}`;
+ 
+      const FALLBACK_MODEL = 'llama-3.1-8b-instant'; 
+      const callGroq = async (model: string) => {
+        return fetch(GROQ_API_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "system", content: systemPrompt }],
+            response_format: { type: "json_object" },
+            temperature: 0.1,
+            max_tokens: 512 // Summary only needs small tokens
+          })
+        });
+      };
+
+      let response = await callGroq("llama-3.3-70b-versatile");
+
+      // Fallback on Rate Limit (429) or JSON Failure (400)
+      if (!response.ok && (response.status === 429 || response.status === 400)) {
+        console.warn(`Export: Primary model hit ${response.status}, falling back to ${FALLBACK_MODEL}`);
+        response = await callGroq(FALLBACK_MODEL);
+      }
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        console.error("Export API Upstream Error:", response.status, err);
+        return NextResponse.json({ error: `AI Engine Error (${response.status})`, details: err.error?.message }, { status: 424 });
+      }
 
       if (response.ok) {
         const data = await response.json();
-        const markdown = data.choices[0]?.message?.content || "Export generation failed.";
-        return NextResponse.json({ markdown });
+        const content = data.choices[0]?.message?.content || "{}";
+        
+        try {
+          const parsed = JSON.parse(content);
+          let summary = parsed.summary || "";
+
+          // Final fallback
+          if (!summary && state.overview?.name) {
+            summary = `The Prodea Architectural Engine has finalized the blueprint for "${state.overview.name}". All 20 technical sections have been calibrated based on your specific requirements and stack choices.`;
+          }
+
+          // HYBRID MODE: Manually render the Technical Body locally for 100% accuracy and token saving
+          const markdown = renderBlueprint(state);
+
+          console.log(`[HYBRID EXPORT] Summary Generated: ${summary ? 'Success' : 'Missing'}`);
+          
+          return NextResponse.json({ markdown, summary });
+        } catch (e) {
+          console.error("JSON Parsing Error in Export:", e);
+          return NextResponse.json({ markdown: renderBlueprint(state), summary: "" });
+        }
       }
     }
 

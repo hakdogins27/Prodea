@@ -19,7 +19,13 @@ export function deepMerge(base: any, updates: any): any {
         // Automatically convert arrays into clean bulleted lists
         result[key] = u.map(item => typeof item === 'string' && !item.startsWith('-') ? `- ${item}` : item).join('\n');
       } else if (typeof u === 'object' && typeof b === 'string') {
-        result[key] = JSON.stringify(u, null, 2);
+        const humanize = (obj: any): string => {
+          return Object.entries(obj).map(([k, v]) => {
+            const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1');
+            return `- ${label}: ${typeof v === 'object' ? JSON.stringify(v) : v}`;
+          }).join('\n');
+        };
+        result[key] = humanize(u);
       } else {
         result[key] = u;
       }

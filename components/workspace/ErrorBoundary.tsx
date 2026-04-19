@@ -27,15 +27,32 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-red-500/5 border border-red-500/20 rounded-3xl">
-          <h2 className="text-xl font-black text-red-500 mb-4 uppercase tracking-[0.2em]">Workspace Error</h2>
-          <p className="text-sm text-white/40 mb-8 max-w-md">Something went wrong in the architectural engine. Your progress is saved in local storage.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-8 py-3 bg-white text-black font-black rounded-full uppercase tracking-widest text-xs hover:scale-105 transition-all"
-          >
-            Refresh Workspace
-          </button>
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+          <div className="max-w-lg w-full p-8 rounded-[2rem] glass-effect border border-red-500/10 shadow-2xl relative overflow-hidden text-center">
+            {/* Subtle glow effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-red-600/10 blur-[60px] rounded-full pointer-events-none" />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              </div>
+              
+              <h2 className="text-2xl font-black uppercase tracking-[0.3em] text-white/90 mb-4 selection:bg-red-500/30">
+                Sync Interrupted
+              </h2>
+              
+              <p className="text-sm text-white/40 font-medium leading-relaxed mb-10">
+                The architectural engine encountered a critical inconsistency. Your session data remains preserved in local storage.
+              </p>
+              
+              <button 
+                onClick={() => window.location.reload()}
+                className="group relative px-10 py-4 bg-white text-black rounded-full font-black uppercase tracking-widest text-xs overflow-hidden transition-all hover:scale-105 active:scale-95"
+              >
+                Re-Initialize Engine
+              </button>
+            </div>
+          </div>
         </div>
       );
     }

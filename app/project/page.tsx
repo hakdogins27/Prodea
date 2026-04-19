@@ -14,11 +14,14 @@ import { BrainDump } from "@/components/workspace/BrainDump";
 import { BlueprintEditor } from "@/components/workspace/BlueprintEditor";
 import { AIAssistant } from "@/components/workspace/AIAssistant";
 import { ExportReview } from "@/components/workspace/ExportReview";
+import { NotificationToast } from "@/components/workspace/NotificationToast";
+import { mapApiError, ErrorInfo } from "@/lib/error-mapping";
 
 function ProjectWorkspace() {
   const { 
     messages, ideaState, workflowStep, isProcessing, isChatCompleted, lastUpdatedField,
-    addMessage, updateIdeaState, setWorkflowStep, setIsProcessing, setIsChatCompleted, setLastUpdatedField, clearSession 
+    addMessage, updateIdeaState, setWorkflowStep, setIsProcessing, setIsChatCompleted, setLastUpdatedField, 
+    finalSummary, setFinalSummary, clearSession 
   } = useProjectStore();
   
   const [mounted, setMounted] = useState(false);
@@ -32,6 +35,7 @@ function ProjectWorkspace() {
   const [currentMissingCount, setCurrentMissingCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const [notification, setNotification] = useState<ErrorInfo | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const ignitedRef = useRef(false);
@@ -95,8 +99,10 @@ function ProjectWorkspace() {
             timestamp: new Date().toISOString()
           });
         }
+        setLastUpdatedField(null);
       } else {
-        alert(`${data.error || 'Ignition Failed'}: ${data.details || 'Check console for details.'}`);
+        const error = mapApiError(response.status, data.details);
+        setNotification(error);
       }
     } finally {
       setIsProcessing(false);
@@ -214,7 +220,6 @@ function ProjectWorkspace() {
       const data = await response.json();
       
       if (response.ok) {
-        if (data.updated_state) updateIdeaState(data.updated_state);
         setCurrentMissingCount(data.missingCount || 0);
         if (data.isChatCompleted) setIsChatCompleted(true);
         if (data.ai_response) {
@@ -225,12 +230,9 @@ function ProjectWorkspace() {
             timestamp: new Date().toISOString()
           });
         }
-        if (data.updated_state) {
-          const keys = Object.keys(data.updated_state);
-          if (keys.length > 0) setLastUpdatedField(keys[0]);
-        }
       } else {
-        alert(`${data.error || 'Refinement Failed'}: ${data.details || 'Check console for details.'}`);
+        const error = mapApiError(response.status, data.details);
+        setNotification(error);
       }
     } catch (e) {
       console.error(e);
@@ -264,13 +266,14 @@ function ProjectWorkspace() {
       const data = await response.json();
       if (data.markdown) {
         setPreviewMarkdown(data.markdown);
+        setFinalSummary(data.summary || "");
         setWorkflowStep(3);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         throw new Error("Failed to generate blueprint");
       }
     } catch (e) {
-      alert("Finalization failed: " + (e as any).message);
+      setNotification(mapApiError(500, (e as any).message));
     } finally {
       setIsFinalizing(false);
     }
@@ -321,8 +324,13 @@ function ProjectWorkspace() {
            </div>
         </header>
 
-        <main className="flex-1 flex flex-col relative">
-          <ErrorBoundary>
+          <NotificationToast 
+            notification={notification} 
+            onClear={() => setNotification(null)} 
+          />
+          
+          <main className="flex-1 flex flex-col relative">
+            <ErrorBoundary>
             {workflowStep === 1 && (
               <BrainDump 
                 brainDump={brainDump}
@@ -370,12 +378,12 @@ function ProjectWorkspace() {
                 />
               </div>
             )}
-
             {workflowStep === 3 && (
               <ExportReview 
                 previewMarkdown={previewMarkdown}
                 setPreviewMarkdown={setPreviewMarkdown}
                 ideaState={ideaState}
+                aiSummary={finalSummary}
                 copied={copied}
                 setCopied={setCopied}
                 setWorkflowStep={setWorkflowStep}

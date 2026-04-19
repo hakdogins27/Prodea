@@ -55,6 +55,7 @@ interface ProjectStore {
   isChatCompleted: boolean;
   interviewStep: number;
   lastUpdatedField: string | null;
+  finalSummary: string | null;
   addMessage: (message: Message) => void;
   updateIdeaState: (state: Partial<IdeaState> | ((prev: IdeaState) => IdeaState)) => void;
   setWorkflowStep: (step: 1 | 2 | 3) => void;
@@ -62,6 +63,7 @@ interface ProjectStore {
   setIsChatCompleted: (completed: boolean) => void;
   setInterviewStep: (step: number) => void;
   setLastUpdatedField: (field: string | null) => void;
+  setFinalSummary: (summary: string | null) => void;
   clearSession: () => void;
 }
 
@@ -75,6 +77,7 @@ export const useProjectStore = create<ProjectStore>()(
       isChatCompleted: false,
       interviewStep: 0,
       lastUpdatedField: null,
+      finalSummary: null,
       addMessage: (message) => 
         set((state) => ({ messages: [...state.messages, message] })),
       updateIdeaState: (update) => 
@@ -89,8 +92,9 @@ export const useProjectStore = create<ProjectStore>()(
       setIsChatCompleted: (completed) => set({ isChatCompleted: completed }),
       setInterviewStep: (step) => set({ interviewStep: step }),
       setLastUpdatedField: (field) => set({ lastUpdatedField: field }),
+      setFinalSummary: (summary) => set({ finalSummary: summary }),
       clearSession: () => 
-        set({ messages: [], ideaState: INITIAL_IDEA_STATE, workflowStep: 1, isProcessing: false, isChatCompleted: false, interviewStep: 0, lastUpdatedField: null }),
+        set({ messages: [], ideaState: INITIAL_IDEA_STATE, workflowStep: 1, isProcessing: false, isChatCompleted: false, interviewStep: 0, lastUpdatedField: null, finalSummary: null }),
     }),
     {
       name: 'prodea-session-v7',
@@ -100,6 +104,7 @@ export const useProjectStore = create<ProjectStore>()(
         workflowStep: state.workflowStep,
         isChatCompleted: state.isChatCompleted,
         interviewStep: state.interviewStep,
+        finalSummary: state.finalSummary,
       }),
     }
   )

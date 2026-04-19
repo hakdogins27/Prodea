@@ -10,23 +10,29 @@ export function cn(...inputs: ClassValue[]) {
 export const humanizeValue = (val: any): string => {
   if (!val) return "";
   
-  let processed = val;
   if (typeof val === 'string') {
-    // 1. Detect and split grouped bullet points (e.g., "- Item A - Item B" -> newlines)
-    // We look for a dash that is preceded by non-newline characters and followed by a space
-    processed = val.replace(/([^\n])\s+-\s+/g, '$1\n- ');
+    let processed = val;
+    // 1. Detect and split joined categories (e.g., "Category: Item AnotherCategory: Item")
+    // We look for a pattern like "Word: " after some text without a newline
+    processed = processed.replace(/([^\n])\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)*:)/g, '$1\n$2');
 
-    return processed;
+    // 2. Ensure bullet points are on new lines
+    processed = processed.replace(/([^\n])\s+-\s+/g, '$1\n- ');
+
+    // 3. Clean up any tripled newlines that might occur from aggressive matching
+    return processed.replace(/\n{3,}/g, '\n\n').trim();
   }
   
   if (Array.isArray(val)) {
     return val.map((item: any) => typeof item === 'object' ? humanizeValue(item) : `- ${item}`).join('\n');
   }
   
-  if (typeof val === 'object') {
-    return Object.values(val)
-      .map((v: any) => humanizeValue(v))
-      .filter((v: string) => v.trim() !== "")
+  if (typeof val === 'object' && val !== null) {
+    return Object.entries(val)
+      .map(([k, v]) => {
+        const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1');
+        return `${label}: ${humanizeValue(v)}`;
+      })
       .join('\n\n');
   }
   

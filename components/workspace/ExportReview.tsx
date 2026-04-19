@@ -1,12 +1,13 @@
 "use client";
 
-import { FileText, Command, ClipboardCheck, Download, RotateCcw, Check } from "lucide-react";
+import { FileText, Command, ClipboardCheck, Download, RotateCcw, Check, Sparkles } from "lucide-react";
 import { IdeaState } from "@/store/useProjectStore";
 
 interface ExportReviewProps {
   previewMarkdown: string;
   setPreviewMarkdown: (val: string) => void;
   ideaState: IdeaState;
+  aiSummary: string | null;
   copied: boolean;
   setCopied: (val: boolean) => void;
   setWorkflowStep: (step: 1 | 2 | 3) => void;
@@ -17,6 +18,7 @@ export function ExportReview({
   previewMarkdown,
   setPreviewMarkdown,
   ideaState,
+  aiSummary,
   copied,
   setCopied,
   setWorkflowStep,
@@ -63,9 +65,11 @@ export function ExportReview({
           </div>
         </div>
 
-        {/* Right: The Final Actions */}
+        {/* Right: AI Summary & Final Actions */}
         <div className="w-full md:w-80 flex flex-col gap-6">
-          <div className="glass-glow border border-white/10 rounded-3xl p-6 flex flex-col gap-6 spectral-border">
+          
+          {/* AI SUMMARY CARD */}
+          <div className="glass-glow border border-white/10 rounded-3xl p-6 flex flex-col gap-6 spectral-border relative z-10">
             <div className="text-center pb-6 border-b border-white/5">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 via-red-600 to-amber-500 border-2 border-white/20 flex items-center justify-center mx-auto mb-4 shadow-[0_0_40px_rgba(220,38,38,0.4)] animate-spectrum-glow">
                 <Check className="w-8 h-8 text-white" />
@@ -99,6 +103,34 @@ export function ExportReview({
               </button>
             </div>
           </div>
+
+          {/* AI SUMMARY CARD (Moved Below Download for conversion priority) */}
+          {aiSummary !== null && (
+            <div className="glass-glow border border-primary/20 rounded-3xl p-6 relative overflow-hidden group animate-in slide-in-from-top duration-700">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+                <Sparkles className="w-12 h-12 text-primary" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Architect's Summary</span>
+                </div>
+                <p className="text-[13px] leading-relaxed text-white/70 font-medium italic">
+                  "{aiSummary}"
+                </p>
+                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <p className="text-[8px] text-white/20 font-bold uppercase tracking-widest">Alignment Verified</p>
+                  <div className="flex gap-1">
+                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-pulse" />
+                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-pulse delay-75" />
+                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-pulse delay-150" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <button 
             onClick={clearSession}

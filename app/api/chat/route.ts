@@ -115,11 +115,14 @@ export async function POST(req: Request) {
       });
     };
 
-    // Try primary model, fallback to 8B on rate limit (429)
-    let response = await callGroq(modelId, phase === 'extraction' ? 8000 : 2048);
+    // Try primary model, fallback to 8B on rate limit (429) or format failure (400)
+    let response = await callGroq(modelId, phase === 'extraction' ? 4000 : 2048);
 
-    if (!response.ok && response.status === 429 && modelId !== FALLBACK_MODEL) {
-      console.warn(`Primary model ${modelId} hit 429, falling back to ${FALLBACK_MODEL}`);
+    const isFormatFailure = response.status === 400;
+    const isRateLimit = response.status === 429;
+
+    if (!response.ok && (isRateLimit || isFormatFailure) && modelId !== FALLBACK_MODEL) {
+      console.warn(`Primary model ${modelId} hit ${response.status}, falling back to ${FALLBACK_MODEL}`);
       response = await callGroq(FALLBACK_MODEL, phase === 'extraction' ? 4000 : 2048);
     }
 
@@ -151,8 +154,18 @@ export async function POST(req: Request) {
       // The 8B model sometimes returns JSON objects for fields that should be plain text
       const flattenToString = (val: any): string => {
         if (typeof val === 'string') return val;
-        if (Array.isArray(val)) return val.map((item: any) => typeof item === 'object' ? `- ${Object.values(item).join(': ')}` : `- ${item}`).join('\n');
-        if (typeof val === 'object' && val !== null) return Object.entries(val).map(([k, v]) => `- ${k}: ${typeof v === 'object' ? flattenToString(v) : v}`).join('\n');
+        if (Array.isArray(val)) {
+          return val.map((item: any) => 
+            typeof item === 'object' ? `- ${Object.values(item).join(': ')}` : `- ${item}`
+          ).join('\n');
+        }
+        if (typeof val === 'object' && val !== null) {
+          return Object.entries(val).map(([k, v]) => {
+            const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1');
+            const content = typeof v === 'object' ? flattenToString(v) : v;
+            return `${label}: ${content}`;
+          }).join('\n\n');
+        }
         return String(val ?? '');
       };
 
@@ -171,7 +184,8 @@ export async function POST(req: Request) {
       }
 
       // Deep merge — never wipe existing state, only update new fields
-      const mergedState = deepMerge(currentState, sanitizedState);
+      // For refinement phase, we skip automatic updates to let the user manually edit
+      const mergedState = phase === 'refinement' ? currentState : deepMerge(currentState, sanitizedState);
       
       // Final check for completion
       const finalMissing = getMissingSections(mergedState);
